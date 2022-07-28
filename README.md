@@ -16,6 +16,7 @@ The code is released under the [MIT license](LICENSE?raw=true).
 
 <details>
 <summary>✍️ 1. JWT 소개</summary>
+<br>
 
 JWT 정의
 - JWT는 RFC 7519 웹 표준으로 지정되어 있고 Json 객체를 사용해서 정보들을 저장하고 있는 Web Token이다.
@@ -35,4 +36,60 @@ JWT 단점
 - 저장하는 정보가 많아지면 트래픽 크기가 커질 수 있다.
 - 토큰이 서버에 저장되지 않고, 각 클라이언트에 저장되기 때문에 서버에서 각 클라이언트에 저장된 토큰 정보를 직접 조작할 수 없다.
 
+</details>
+
+<details>
+<summary>✍️ 2. Security 기본 설정, Data 설정</summary>
+
+
+웹 보안 활성화
+```
+package edu.inflearn.jwt.config;
+
+import ...
+
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests().antMatchers("/api/hello").permitAll()
+            .anyRequest().authenticated();
+    }
+
+    @Override
+    public void configure(WebSecurity web) {
+        web.ignoring()
+           .antMatchers(
+                   "/h2-console/**",
+                   "/favicon.ico",
+                   "/error"
+           );
+    }
+}
+```
+
+Entity 선언
+```
+package edu.inflearn.jwt.entity;
+
+import ...
+
+@Entity
+@Table(name = "user")
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class User {
+    ...
+    
+    @ManyToMany
+    @JoinTable(
+            name = "user_authority",
+            joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
+    private Set<Authority> authorities;
+}
+```
 </details>
