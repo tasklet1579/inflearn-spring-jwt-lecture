@@ -319,3 +319,93 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 }
 ```
 </details>
+
+<details>
+<summary>✍️ 4. 로그인</summary>
+<br>
+
+회원정보 조회
+- @EntityGraph
+  - Spring Data JPA에서 fetch join을 어노테이션으로 사용할 수 있도록 만든 기능이다.
+    - fetch : attribute는 eager로 fetch하고 나머지 attribute는 lazy로 fetch한다.
+    - load : attribute는 eager로 fetch하고 나머지 attribute는 entity에 명시한 type이나 default type으로 fetch한다.
+```
+package edu.inflearn.jwt.repository;
+
+import ...
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    @EntityGraph(attributePaths = "authorities")
+    Optional<User> findOneWithAuthoritiesByUsername(String username);
+}
+```
+
+UserDetailsService
+```
+package edu.inflearn.jwt.service;
+
+import ...
+
+@Component("userDetailsService")
+public class CustomUserDetailsService implements UserDetailsService {
+    ...
+
+    @Override
+    @Transactional
+    public UserDetails loadUserByUsername(final String username) {
+        // Database에서 User 정보를 권한 정보와 함께 가져온다.
+        return userRepository.findOneWithAuthoritiesByUsername(username)
+                             .map(user -> createUser(username, user))
+                             .orElseThrow(() -> new UsernameNotFoundException(username + " -> 데이터베이스에서 찾을 수 없습니다."));
+    }
+
+    private org.springframework.security.core.userdetails.User createUser(String username, User user) {
+        if (!user.isActivated()) {
+            throw new RuntimeException(username + " -> 활성화되어 있지 않습니다.");
+        }
+        List<GrantedAuthority> grantedAuthorities = user.getAuthorities()
+                                                        .stream()
+                                                        .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
+                                                        .collect(Collectors.toList());
+        return new org.springframework.security.core.userdetails.User(user.getUsername(),
+                user.getPassword(),
+                grantedAuthorities);
+    }
+}
+```
+
+🧪 HTTP Request
+```
+###
+POST {{host}}/api/authenticate
+Content-Type: application/json
+
+{
+  "username" : "admin",
+  "password" : "admin"
+}
+```
+
+🧪 HTTP Response
+```
+HTTP/1.1 200 
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTY1OTIzMTIxMn0.wZfhDUZrZ-lr6LTCeVE8rJnOOVk97cp5TMX4qbWro3zQA9KTCf_yjFS9PuCtK6zpdLIHhnx5sO5YT1h6WVWHAw
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: SAMEORIGIN
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 30 Jul 2022 01:33:32 GMT
+Keep-Alive: timeout=60
+Connection: keep-alive
+
+{
+  "token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTY1OTIzMTIxMn0.wZfhDUZrZ-lr6LTCeVE8rJnOOVk97cp5TMX4qbWro3zQA9KTCf_yjFS9PuCtK6zpdLIHhnx5sO5YT1h6WVWHAw"
+}
+
+Response code: 200; Time: 97ms; Content length: 203 bytes
+```
+</details>
