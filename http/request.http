@@ -6,3 +6,34 @@ Content-Type: application/json
   "username" : "admin",
   "password" : "admin"
 }
+
+###
+POST {{host}}/api/authenticate
+Content-Type: application/json
+
+{
+  "username" : "user",
+  "password" : "password"
+}
+
+###
+POST {{host}}/api/signup
+Content-Type: application/json
+
+{
+  "username" : "guest",
+  "password" : "guest",
+  "nickname" : "guest"
+}
+
+###
+GET {{host}}/api/user/admin
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImF1dGgiOiJST0xFX0FETUlOLFJPTEVfVVNFUiIsImV4cCI6MTY1OTQwNjQyNH0.Gb3doqktbtAubHg9U4Kq-ZVQG0rH6hDIy1sloD6Pk4uBAAoYYmMXxxVHXz587Pzx7sWlNeeSHhJOQ-b8vWYMRg
+
+###
+GET {{host}}/api/user/user
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTY1OTQwNjQzNX0.fn4w59SCbiUWGfYWyqrJJp0udIHxizl2lRa1ifyocusuI2XKHTpRqLQYOwD9OZMF-_XBPjKLp9W7qe5ZI_QfBw
+
+###
+GET {{host}}/api/user
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c2VyIiwiYXV0aCI6IlJPTEVfVVNFUiIsImV4cCI6MTY1OTQwNjQzNX0.fn4w59SCbiUWGfYWyqrJJp0udIHxizl2lRa1ifyocusuI2XKHTpRqLQYOwD9OZMF-_XBPjKLp9W7qe5ZI_QfBw
